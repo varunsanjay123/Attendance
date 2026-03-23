@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Meta tags for responsiveness and SEO -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Admin Panel - Smart Face Recognition Attendance System">
+    <meta name="author" content="Attendance Management System">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>">
+    
+    <!-- Google Fonts for elegant typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 for responsive design -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    
+    <title>Admin Panel - Smart Attendance System</title>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-user-shield"></i>
+                Admin Panel
+            </a>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Action Buttons Section -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-4">
+                <a href="/start" class="btn btn-custom w-100">
+                    <i class="fas fa-camera"></i>
+                    Take Attendance
+                </a>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-custom w-100" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="fas fa-user-plus"></i>
+                    Add User
+                </button>
+            </div>
+            <div class="col-md-4">
+                <a href="/download" class="btn btn-custom w-100">
+                    <i class="fas fa-download"></i>
+                    Export Data
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="dashboard-card stats-card">
+                    <div class="stats-icon users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h2 class="stats-number" id="total-users">{{ totalreg }}</h2>
+                    <p class="stats-label">Total Users</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card stats-card">
+                    <div class="stats-icon date">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <h2 class="stats-number">{{ datetoday2.split()[0] }}</h2>
+                    <p class="stats-label">Today's Date</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card stats-card">
+                    <div class="stats-icon percentage">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="attendance-percentage">
+                        <svg viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="50" class="bg-circle" stroke-width="8"></circle>
+                            <circle cx="60" cy="60" r="50" class="progress-circle" stroke-width="8" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+                        </svg>
+                        <div class="percentage-text" id="percentage-text">0%</div>
+                    </div>
+                    <p class="stats-label">Attendance Rate</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="dashboard-card mb-4">
+            <div class="card-header">
+                <i class="fas fa-calendar-check"></i>
+                Today's Attendance
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive attendance-table">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th><i class="fas fa-user me-2"></i>Name</th>
+                                <th><i class="fas fa-id-badge me-2"></i>ID</th>
+                                <th><i class="fas fa-clock me-2"></i>Time</th>
+                                <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if l %}
+                                {% for i in range(l) %}
+                                <tr>
+                                    <td>{{ i+1 }}</td>
+                                    <td>{{ names[i] }}</td>
+                                    <td>{{ rolls[i] }}</td>
+                                    <td>{{ times[i] }}</td>
+                                    <td>
+                                        <form method="post" action="/delete_attendance" style="display:inline;">
+                                            <input type="hidden" name="index" value="{{ i }}">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this attendance record?')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="fas fa-info-circle me-2 text-muted"></i>
+                                        No attendance recorded yet
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Users Section -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <i class="fas fa-users-cog"></i>
+                Manage Users
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive attendance-table">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th><i class="fas fa-user me-2"></i>Name</th>
+                                <th><i class="fas fa-id-badge me-2"></i>ID</th>
+                                <th><i class="fas fa-cogs me-2"></i>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.id }}</td>
+                                <td>
+                                    <form action="/remove" method="POST" style="display:inline;">
+                                        <input type="hidden" name="userid" value="{{ user.id }}">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this user?')">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">
+                        <i class="fas fa-user-plus"></i>
+                        Add New User
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/add" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-4">
+                            <label for="newusername" class="form-label">
+                                <i class="fas fa-user"></i>
+                                Full Name
+                            </label>
+                            <input type="text" id="newusername" name="newusername" class="form-control" required placeholder="Enter full name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newuserid" class="form-label">
+                                <i class="fas fa-id-badge"></i>
+                                User ID
+                            </label>
+                            <input type="number" id="newuserid" name="newuserid" class="form-control" required placeholder="Enter user ID">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Close
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let totalUsers = parseInt("{{ totalreg }}") || 1;
+            let presentUsers = parseInt("{{ l }}") || 0;
+            let percentage = Math.round((presentUsers / totalUsers) * 100);
+            
+            let progressCircle = document.querySelector(".progress-circle");
+            let text = document.getElementById("percentage-text");
+            let offset = 314 - (314 * percentage) / 100;
+            
+            progressCircle.style.strokeDashoffset = offset;
+            text.textContent = percentage + "%";
+
+            // Add smooth animations
+            const cards = document.querySelectorAll('.dashboard-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>

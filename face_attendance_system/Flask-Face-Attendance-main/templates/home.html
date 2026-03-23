@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Meta tags for responsiveness and SEO -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Smart Face Recognition Attendance System">
+    <meta name="author" content="Attendance Management System">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>">
+    
+    <!-- Google Fonts for elegant typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 for responsive design -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    
+    <title>Smart Attendance System</title>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="content-wrapper">
+            <div class="header">
+                <h1>
+                    <i class="fas fa-user-check"></i>
+                    Smart Attendance System
+                </h1>
+                <button type="button" class="admin-btn" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    <i class="fas fa-lock"></i>Admin Login
+                </button>
+            </div>
+
+            <div class="camera-container">
+                <div class="camera-header">
+                    <h3>
+                        <i class="fas fa-camera"></i>Face Recognition Attendance
+                    </h3>
+                </div>
+                
+                {% if mess %}
+                    {% if 'recorded' in mess.lower() %}
+                        <div class="status-message success">
+                            <i class="fas fa-check-circle me-2"></i>{{ mess }}
+                        </div>
+                    {% elif 'already marked' in mess.lower() %}
+                        <div class="status-message warning">
+                            <i class="fas fa-info-circle me-2"></i>{{ mess }} (Duplicate entry prevented)
+                        </div>
+                    {% elif 'please add' in mess.lower() %}
+                        <div class="status-message warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>{{ mess }}
+                        </div>
+                    {% else %}
+                        <div class="status-message error">
+                            <i class="fas fa-times-circle me-2"></i>{{ mess }}
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <img src="{{ url_for('video_feed') }}" alt="Live Camera Feed" class="video-feed">
+                
+                <div class="scanning-info">
+                    <p><i class="fas fa-video"></i>Live Camera Feed Active</p>
+                    <p><i class="fas fa-user"></i>Position yourself in front of the camera to mark attendance</p>
+                    <p><i class="fas fa-clock"></i>Attendance will be recorded automatically upon recognition</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">
+                        <i class="fas fa-lock me-2"></i>Admin Login
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/login" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-4">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input type="text" id="username" name="username" class="form-control" required placeholder="Enter your username">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-key me-2"></i>Password
+                            </label>
+                            <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Close
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-refresh the page if a message is shown (after 3 seconds)
+            const statusMessage = document.querySelector('.status-message');
+            if (statusMessage) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            }
+
+            // Add loading animation to video feed
+            const videoFeed = document.querySelector('.video-feed');
+            videoFeed.addEventListener('load', function() {
+                this.style.opacity = '1';
+            });
+            videoFeed.style.opacity = '0';
+            videoFeed.style.transition = 'opacity 0.5s ease';
+        });
+    </script>
+</body>
+</html>
